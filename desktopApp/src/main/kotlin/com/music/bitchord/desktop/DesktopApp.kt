@@ -318,7 +318,6 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.yield
-import org.jetbrains.compose.resources.Font as composeFont
 import org.jetbrains.compose.resources.painterResource
 
 /**
@@ -329,14 +328,16 @@ import org.jetbrains.compose.resources.painterResource
  */
 internal val DesktopPageGutter = PAGE_GUTTER
 
-internal val DesktopBackground = Color(0xFF202020)
-internal val DesktopSurface = Color(0xFF0D0D0F)
-private val DesktopSurfaceRaised = Color(0xFF1C1C1E)
-internal val DesktopGlass = Color(0x661C1C1E)
-internal val DesktopGlassStrong = Color(0xCC0D0D0F)
+// WorkspaceMoonlight: the navy surfaces and cyan accent used by the KDE desktop.
+internal val DesktopBackground = Color(0xFF0C1624)
+internal val DesktopSurface = Color(0xFF111F31)
+private val DesktopSurfaceRaised = Color(0xFF16273B)
+internal val DesktopText = Color(0xFFE5EFFB)
+internal val DesktopGlass = Color(0x6616273B)
+internal val DesktopGlassStrong = Color(0xCC111F31)
 
 /** The floating bars in the narrow layout. */
-private val DesktopBarGlass = Color(0xB324242A)
+private val DesktopBarGlass = Color(0xE6111F31)
 
 /** The backdrop the floating bars blur. */
 private val LocalDesktopHaze = staticCompositionLocalOf<HazeState?> { null }
@@ -346,32 +347,32 @@ private val LocalDesktopBottomInset = staticCompositionLocalOf { 0.dp }
 
 /** Android's own edge on these bars: `Color.White.copy(alpha = 0.10f)`. */
 private val DesktopBarEdge = Color(0x1AFFFFFF)
-internal val DesktopAccent = Color.White
+internal val DesktopAccent = Color(0xFF83D9FA)
 
 /** Deleting, signing out, and anything that failed — the one place a colour survives, as on Android. */
-internal val DesktopDestructive = Color(0xFFFF453A)
+internal val DesktopDestructive = Color(0xFFF49DB4)
 
-/** A chip the way Android draws a chosen segment: solid white with black on it, or nothing at all. */
+/** Cyan selections remain readable against the navy panels. */
 @Composable
 internal fun desktopChipColors() = FilterChipDefaults.filterChipColors(
     containerColor = Color.Transparent,
     labelColor = DesktopSecondary,
-    selectedContainerColor = Color.White,
-    selectedLabelColor = Color.Black,
+    selectedContainerColor = DesktopAccent,
+    selectedLabelColor = DesktopBackground,
 )
 
-/** Android's switch: a white track with a black knob on, a faint wash off. */
+/** Use the same accent for switches and selected navigation. */
 @Composable
 internal fun desktopSwitchColors() = SwitchDefaults.colors(
-    checkedTrackColor = Color.White,
-    checkedThumbColor = Color.Black,
+    checkedTrackColor = DesktopAccent,
+    checkedThumbColor = DesktopBackground,
     checkedBorderColor = Color.Transparent,
     uncheckedTrackColor = Color.White.copy(alpha = 0.10f),
     uncheckedThumbColor = Color.White.copy(alpha = 0.35f),
     uncheckedBorderColor = Color.Transparent,
 )
-internal val DesktopSecondary = Color(0xFF8E8E93)
-internal val DesktopDivider = Color(0xFF2C2C2E)
+internal val DesktopSecondary = Color(0xFF9AAFC9)
+internal val DesktopDivider = Color(0xFF3B4959)
 private const val STATS_SAMPLE_MS = 5_000L
 
 /** How often the playhead is offered to the history tracker. */
@@ -410,50 +411,58 @@ private const val PARTY_AUTOPLAY_ECHO_TIMEOUT_MS = 5_000L
 /** The phone gives one empty station response a delayed second chance. */
 private const val AUTOPLAY_EMPTY_REFRESH_DELAY_MS = 2_000L
 
-/** The phone's dark scheme, which the shared pages are drawn against. */
+/** The shared pages inherit the desktop's Moonlight palette. */
 internal fun desktopColorScheme() = darkColorScheme(
     primary = DesktopAccent,
-    // Black on the accent, now that the accent is white.
-    onPrimary = Color.Black,
-    primaryContainer = Color.White.copy(alpha = 0.16f),
-    onPrimaryContainer = Color.White,
+    onPrimary = DesktopBackground,
+    primaryContainer = Color(0xFF233B48),
+    onPrimaryContainer = DesktopAccent,
+    secondary = Color(0xFFB7ABF8),
+    onSecondary = DesktopBackground,
+    secondaryContainer = Color(0xFF29314B),
+    onSecondaryContainer = DesktopText,
+    tertiary = Color(0xFF8EDAC7),
+    onTertiary = DesktopBackground,
+    error = DesktopDestructive,
+    onError = DesktopBackground,
     background = DesktopBackground,
-    onBackground = Color.White,
+    onBackground = DesktopText,
     surface = DesktopSurface,
-    onSurface = Color.White,
+    onSurface = DesktopText,
+    surfaceContainerLowest = DesktopBackground,
+    surfaceContainerLow = DesktopSurface,
+    surfaceContainer = DesktopSurface,
+    surfaceContainerHigh = DesktopSurfaceRaised,
+    surfaceContainerHighest = Color(0xFF233B48),
     surfaceVariant = DesktopSurfaceRaised,
     onSurfaceVariant = DesktopSecondary,
-    outline = Color(0xFF2C2C2E),
+    outline = DesktopDivider,
     outlineVariant = DesktopDivider,
     surfaceTint = DesktopAccent,
 )
 
 @Composable
+@OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
 internal fun desktopTypography(): Typography {
-    val sfProDisplay = FontFamily(
-        composeFont(Res.font.sf_pro_display_regular, FontWeight.W400),
-        composeFont(Res.font.sf_pro_display_medium, FontWeight.W500),
-        composeFont(Res.font.sf_pro_display_semibold, FontWeight.W600),
-        composeFont(Res.font.sf_pro_display_bold, FontWeight.W700),
-        composeFont(Res.font.sf_pro_display_heavy, FontWeight.W800),
-    )
+    // Resolve the installed desktop font through the platform font loader.
+    val desktopFont = remember { FontFamily("JetBrains Mono") }
     val defaults = Typography()
     return defaults.copy(
-        displayLarge = defaults.displayLarge.copy(fontFamily = sfProDisplay, fontWeight = FontWeight.W800, fontSize = 34.sp, letterSpacing = (-0.8).sp),
-        displayMedium = defaults.displayMedium.copy(fontFamily = sfProDisplay),
-        displaySmall = defaults.displaySmall.copy(fontFamily = sfProDisplay),
-        headlineLarge = defaults.headlineLarge.copy(fontFamily = sfProDisplay, fontWeight = FontWeight.W800, fontSize = 30.sp, letterSpacing = (-0.7).sp),
-        headlineMedium = defaults.headlineMedium.copy(fontFamily = sfProDisplay, fontWeight = FontWeight.W700, fontSize = 22.sp, letterSpacing = (-0.4).sp),
-        headlineSmall = defaults.headlineSmall.copy(fontFamily = sfProDisplay),
-        titleLarge = defaults.titleLarge.copy(fontFamily = sfProDisplay, fontWeight = FontWeight.W700, fontSize = 20.sp, letterSpacing = (-0.3).sp),
-        titleMedium = defaults.titleMedium.copy(fontFamily = sfProDisplay, fontWeight = FontWeight.W600, fontSize = 16.sp, letterSpacing = (-0.2).sp),
-        titleSmall = defaults.titleSmall.copy(fontFamily = sfProDisplay),
-        bodyLarge = defaults.bodyLarge.copy(fontFamily = sfProDisplay, fontWeight = FontWeight.W400, fontSize = 16.sp),
-        bodyMedium = defaults.bodyMedium.copy(fontFamily = sfProDisplay, fontWeight = FontWeight.W400, fontSize = 14.sp),
-        bodySmall = defaults.bodySmall.copy(fontFamily = sfProDisplay),
-        labelLarge = defaults.labelLarge.copy(fontFamily = sfProDisplay),
-        labelMedium = defaults.labelMedium.copy(fontFamily = sfProDisplay, fontWeight = FontWeight.W600, fontSize = 12.sp),
-        labelSmall = defaults.labelSmall.copy(fontFamily = sfProDisplay, fontWeight = FontWeight.W600, fontSize = 11.sp),
+        displayLarge = defaults.displayLarge.copy(fontFamily = desktopFont, fontWeight = FontWeight.W800, fontSize = 34.sp, letterSpacing = (-0.8).sp),
+        displayMedium = defaults.displayMedium.copy(fontFamily = desktopFont),
+        displaySmall = defaults.displaySmall.copy(fontFamily = desktopFont),
+        headlineLarge = defaults.headlineLarge.copy(fontFamily = desktopFont, fontWeight = FontWeight.W800, fontSize = 30.sp, letterSpacing = (-0.7).sp),
+        headlineMedium = defaults.headlineMedium.copy(fontFamily = desktopFont, fontWeight = FontWeight.W700, fontSize = 22.sp, letterSpacing = (-0.4).sp),
+        headlineSmall = defaults.headlineSmall.copy(fontFamily = desktopFont),
+        titleLarge = defaults.titleLarge.copy(fontFamily = desktopFont, fontWeight = FontWeight.W700, fontSize = 20.sp, letterSpacing = (-0.3).sp),
+        titleMedium = defaults.titleMedium.copy(fontFamily = desktopFont, fontWeight = FontWeight.W600, fontSize = 16.sp, letterSpacing = (-0.2).sp),
+        titleSmall = defaults.titleSmall.copy(fontFamily = desktopFont),
+        bodyLarge = defaults.bodyLarge.copy(fontFamily = desktopFont, fontWeight = FontWeight.W400, fontSize = 16.sp),
+        bodyMedium = defaults.bodyMedium.copy(fontFamily = desktopFont, fontWeight = FontWeight.W400, fontSize = 14.sp),
+        bodySmall = defaults.bodySmall.copy(fontFamily = desktopFont),
+        labelLarge = defaults.labelLarge.copy(fontFamily = desktopFont),
+        labelMedium = defaults.labelMedium.copy(fontFamily = desktopFont, fontWeight = FontWeight.W600, fontSize = 12.sp),
+        labelSmall = defaults.labelSmall.copy(fontFamily = desktopFont, fontWeight = FontWeight.W600, fontSize = 11.sp),
     )
 }
 
@@ -2844,7 +2853,7 @@ fun BitChordDesktopApp() {
         typography = desktopTypography(),
     ) {
         CompositionLocalProvider(
-            LocalContentColor provides Color.White,
+            LocalContentColor provides DesktopText,
             LocalNowPlaying provides selectedSong,
         ) {
             DesktopFrame(
@@ -3332,7 +3341,7 @@ fun BitChordDesktopApp() {
                         )
                     }
                 },
-            ) { contentPadding ->
+            ) { contentPadding, compact ->
                 // Desktop pages start at the same top edge as Library. Only preserve space for the
                 // floating player/navigation bar at the bottom in compact windows.
                 val sharedPagePadding = PaddingValues(bottom = contentPadding.calculateBottomPadding())
@@ -3820,7 +3829,9 @@ fun BitChordDesktopApp() {
                             onTypeaheadLongPress = ::openMenu,
                             contentPadding = sharedPagePadding,
                             topPadding = 0.dp,
-                            showField = false,
+                            // The sidebar owns the field in wide windows. Once it is hidden,
+                            // the page must provide the input as well as the search results.
+                            showField = compact,
                         )
                         destination == DesktopDestination.LIBRARY && libraryShowAll != null -> Column(Modifier.fillMaxSize()) {
                             // The phone keeps the grid's sort beside it, in the bar above; here it sits
@@ -4396,8 +4407,8 @@ private fun DesktopSidebarItem(
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(7.dp))
-            .background(if (selected) Color.White.copy(alpha = 0.12f) else Color.Transparent)
+            .clip(RoundedCornerShape(10.dp))
+            .background(if (selected) DesktopAccent.copy(alpha = 0.14f) else Color.Transparent)
             .clickable(onClick = onClick)
             .padding(horizontal = 9.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -4406,7 +4417,7 @@ private fun DesktopSidebarItem(
         Spacer(Modifier.width(10.dp))
         Text(
             label,
-            color = if (selected) Color.White else DesktopSecondary,
+            color = if (selected) DesktopText else DesktopSecondary,
             style = MaterialTheme.typography.bodyMedium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -4537,14 +4548,15 @@ internal fun DesktopSearchField(
     onFocusChanged: (Boolean) -> Unit = {},
     placeholder: String = "Search",
 ) {
-    val searchShape = RoundedCornerShape(7.dp)
+    var focused by remember { mutableStateOf(false) }
+    val searchShape = RoundedCornerShape(10.dp)
     Box(
         modifier
             .fillMaxWidth()
-            .height(36.dp)
+            .height(42.dp)
             .clip(searchShape)
-            .background(Color.White.copy(alpha = 0.07f))
-            .border(1.dp, Color.White.copy(alpha = 0.10f), searchShape)
+            .background(DesktopSurfaceRaised)
+            .border(1.dp, if (focused) DesktopAccent else DesktopDivider, searchShape)
             .clickable { focusRequester.requestFocus() }
             .padding(horizontal = 9.dp),
         contentAlignment = Alignment.CenterStart,
@@ -4555,7 +4567,10 @@ internal fun DesktopSearchField(
             modifier = Modifier
                 .fillMaxWidth()
                 .focusRequester(focusRequester)
-                .onFocusChanged { onFocusChanged(it.isFocused) }
+                .onFocusChanged {
+                    focused = it.isFocused
+                    onFocusChanged(it.isFocused)
+                }
                 .onPreviewKeyEvent { event ->
                     if (event.type == KeyEventType.KeyDown && event.key == Key.Enter) {
                         onSearch()
@@ -4565,7 +4580,7 @@ internal fun DesktopSearchField(
                     }
                 },
             singleLine = true,
-            textStyle = MaterialTheme.typography.bodyMedium.copy(color = Color.White),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = DesktopText),
             cursorBrush = SolidColor(DesktopAccent),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { onSearch() }),
@@ -4607,7 +4622,7 @@ private fun DesktopFrame(
     /** The column on the far side of the page — the lyrics or the queue, when one is open. */
     trailing: @Composable () -> Unit = {},
     overlay: @Composable () -> Unit = {},
-    content: @Composable (PaddingValues) -> Unit,
+    content: @Composable (PaddingValues, compact: Boolean) -> Unit,
 ) {
     // Held out here rather than inside the constraints box.
     val haze = remember { HazeState() }
@@ -4659,6 +4674,7 @@ private fun DesktopFrame(
                                                 // last row can still be scrolled clear of it.
                                                 bottom = if (compact) 128.dp else 16.dp,
                                             ),
+                                            compact,
                                         )
                                     }
                                     if (compact) {
