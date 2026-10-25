@@ -225,6 +225,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -255,7 +256,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import bitchord.desktopapp.generated.resources.Res
 import bitchord.desktopapp.generated.resources.logo
-import bitchord.desktopapp.generated.resources.logo_mark
 import bitchord.desktopapp.generated.resources.sf_pro_display_bold
 import bitchord.desktopapp.generated.resources.sf_pro_display_heavy
 import bitchord.desktopapp.generated.resources.sf_pro_display_medium
@@ -328,16 +328,16 @@ import org.jetbrains.compose.resources.painterResource
  */
 internal val DesktopPageGutter = PAGE_GUTTER
 
-// WorkspaceMoonlight: the navy surfaces and cyan accent used by the KDE desktop.
-internal val DesktopBackground = Color(0xFF0C1624)
-internal val DesktopSurface = Color(0xFF111F31)
-private val DesktopSurfaceRaised = Color(0xFF16273B)
-internal val DesktopText = Color(0xFFE5EFFB)
-internal val DesktopGlass = Color(0x6616273B)
-internal val DesktopGlassStrong = Color(0xCC111F31)
+// Frieren at night: silver, violet and muted gold over the desktop's blue ground.
+internal val DesktopBackground = Color(0xFF0B1220)
+internal val DesktopSurface = Color(0xFF131D30)
+private val DesktopSurfaceRaised = Color(0xFF202B42)
+internal val DesktopText = Color(0xFFF0EDF7)
+internal val DesktopGlass = Color(0x66202B42)
+internal val DesktopGlassStrong = Color(0xCC131D30)
 
 /** The floating bars in the narrow layout. */
-private val DesktopBarGlass = Color(0xE6111F31)
+private val DesktopBarGlass = Color(0xE6131D30)
 
 /** The backdrop the floating bars blur. */
 private val LocalDesktopHaze = staticCompositionLocalOf<HazeState?> { null }
@@ -347,12 +347,12 @@ private val LocalDesktopBottomInset = staticCompositionLocalOf { 0.dp }
 
 /** Android's own edge on these bars: `Color.White.copy(alpha = 0.10f)`. */
 private val DesktopBarEdge = Color(0x1AFFFFFF)
-internal val DesktopAccent = Color(0xFF83D9FA)
+internal val DesktopAccent = Color(0xFFC4B2E8)
 
 /** Deleting, signing out, and anything that failed — the one place a colour survives, as on Android. */
 internal val DesktopDestructive = Color(0xFFF49DB4)
 
-/** Cyan selections remain readable against the navy panels. */
+/** Silver-violet selections remain readable against the night-blue panels. */
 @Composable
 internal fun desktopChipColors() = FilterChipDefaults.filterChipColors(
     containerColor = Color.Transparent,
@@ -371,8 +371,8 @@ internal fun desktopSwitchColors() = SwitchDefaults.colors(
     uncheckedThumbColor = Color.White.copy(alpha = 0.35f),
     uncheckedBorderColor = Color.Transparent,
 )
-internal val DesktopSecondary = Color(0xFF9AAFC9)
-internal val DesktopDivider = Color(0xFF3B4959)
+internal val DesktopSecondary = Color(0xFFA9B4CF)
+internal val DesktopDivider = Color(0xFF394660)
 private const val STATS_SAMPLE_MS = 5_000L
 
 /** How often the playhead is offered to the history tracker. */
@@ -411,17 +411,17 @@ private const val PARTY_AUTOPLAY_ECHO_TIMEOUT_MS = 5_000L
 /** The phone gives one empty station response a delayed second chance. */
 private const val AUTOPLAY_EMPTY_REFRESH_DELAY_MS = 2_000L
 
-/** The shared pages inherit the desktop's Moonlight palette. */
+/** Shared pages inherit the Frieren night palette. */
 internal fun desktopColorScheme() = darkColorScheme(
     primary = DesktopAccent,
     onPrimary = DesktopBackground,
-    primaryContainer = Color(0xFF233B48),
+    primaryContainer = Color(0xFF35304C),
     onPrimaryContainer = DesktopAccent,
-    secondary = Color(0xFFB7ABF8),
+    secondary = Color(0xFFD6BD84),
     onSecondary = DesktopBackground,
-    secondaryContainer = Color(0xFF29314B),
+    secondaryContainer = Color(0xFF393348),
     onSecondaryContainer = DesktopText,
-    tertiary = Color(0xFF8EDAC7),
+    tertiary = Color(0xFFB9D3BD),
     onTertiary = DesktopBackground,
     error = DesktopDestructive,
     onError = DesktopBackground,
@@ -433,7 +433,7 @@ internal fun desktopColorScheme() = darkColorScheme(
     surfaceContainerLow = DesktopSurface,
     surfaceContainer = DesktopSurface,
     surfaceContainerHigh = DesktopSurfaceRaised,
-    surfaceContainerHighest = Color(0xFF233B48),
+    surfaceContainerHighest = Color(0xFF35304C),
     surfaceVariant = DesktopSurfaceRaised,
     onSurfaceVariant = DesktopSecondary,
     outline = DesktopDivider,
@@ -446,15 +446,16 @@ internal fun desktopColorScheme() = darkColorScheme(
 internal fun desktopTypography(): Typography {
     // Resolve the installed desktop font through the platform font loader.
     val desktopFont = remember { FontFamily("JetBrains Mono") }
+    val headingFont = remember { FontFamily("Noto Serif") }
     val defaults = Typography()
     return defaults.copy(
-        displayLarge = defaults.displayLarge.copy(fontFamily = desktopFont, fontWeight = FontWeight.W800, fontSize = 34.sp, letterSpacing = (-0.8).sp),
-        displayMedium = defaults.displayMedium.copy(fontFamily = desktopFont),
-        displaySmall = defaults.displaySmall.copy(fontFamily = desktopFont),
-        headlineLarge = defaults.headlineLarge.copy(fontFamily = desktopFont, fontWeight = FontWeight.W800, fontSize = 30.sp, letterSpacing = (-0.7).sp),
-        headlineMedium = defaults.headlineMedium.copy(fontFamily = desktopFont, fontWeight = FontWeight.W700, fontSize = 22.sp, letterSpacing = (-0.4).sp),
-        headlineSmall = defaults.headlineSmall.copy(fontFamily = desktopFont),
-        titleLarge = defaults.titleLarge.copy(fontFamily = desktopFont, fontWeight = FontWeight.W700, fontSize = 20.sp, letterSpacing = (-0.3).sp),
+        displayLarge = defaults.displayLarge.copy(fontFamily = headingFont, fontWeight = FontWeight.W800, fontSize = 34.sp, letterSpacing = (-0.8).sp),
+        displayMedium = defaults.displayMedium.copy(fontFamily = headingFont),
+        displaySmall = defaults.displaySmall.copy(fontFamily = headingFont),
+        headlineLarge = defaults.headlineLarge.copy(fontFamily = headingFont, fontWeight = FontWeight.W800, fontSize = 30.sp, letterSpacing = (-0.7).sp),
+        headlineMedium = defaults.headlineMedium.copy(fontFamily = headingFont, fontWeight = FontWeight.W700, fontSize = 22.sp, letterSpacing = (-0.4).sp),
+        headlineSmall = defaults.headlineSmall.copy(fontFamily = headingFont),
+        titleLarge = defaults.titleLarge.copy(fontFamily = headingFont, fontWeight = FontWeight.W700, fontSize = 20.sp, letterSpacing = (-0.3).sp),
         titleMedium = defaults.titleMedium.copy(fontFamily = desktopFont, fontWeight = FontWeight.W600, fontSize = 16.sp, letterSpacing = (-0.2).sp),
         titleSmall = defaults.titleSmall.copy(fontFamily = desktopFont),
         bodyLarge = defaults.bodyLarge.copy(fontFamily = desktopFont, fontWeight = FontWeight.W400, fontSize = 16.sp),
@@ -4008,11 +4009,11 @@ private fun DesktopTopBar(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // The mark leads the player's own controls, now that the sidebar runs to the top.
-                Image(
-                    painter = painterResource(Res.drawable.logo_mark),
-                    contentDescription = "BitChord",
-                    modifier = Modifier.size(width = 28.dp, height = 18.dp),
-                )
+                FrierenSigil(Modifier.size(28.dp))
+                if (compact) {
+                    Spacer(Modifier.width(10.dp))
+                    Text("FRIEREN", color = DesktopText, style = MaterialTheme.typography.labelSmall, letterSpacing = 2.sp)
+                }
                 Spacer(Modifier.width(14.dp))
                 DesktopToolbarButton(onClick = onBack, enabled = canGoBack, size = 32.dp) {
                     Icon(
@@ -4311,6 +4312,17 @@ private fun DesktopSidebar(
         Column(
             Modifier.fillMaxSize().padding(start = 12.dp, end = 12.dp, top = if (inlineCaption) 4.dp else 16.dp, bottom = 16.dp),
         ) {
+            Row(
+                Modifier.fillMaxWidth().padding(start = 6.dp, bottom = 18.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                FrierenSigil(Modifier.size(30.dp))
+                Spacer(Modifier.width(10.dp))
+                Column {
+                    Text("FRIEREN", color = DesktopText, style = MaterialTheme.typography.titleSmall, letterSpacing = 2.4.sp)
+                    Text("Beyond the journey", color = DesktopSecondary, style = MaterialTheme.typography.labelSmall)
+                }
+            }
             DesktopSearchField(
                 query = query,
                 onQueryChange = onQueryChange,
@@ -4703,6 +4715,23 @@ private fun DesktopFrame(
     }
 }
 
+/** A quiet staff-and-orbit mark, drawn as vectors so it stays crisp at desktop scale. */
+@Composable
+private fun FrierenSigil(modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        val stroke = 1.2.dp.toPx()
+        val middle = size.width / 2
+        val gold = Color(0xFFD6BD84)
+        drawCircle(DesktopAccent.copy(alpha = 0.55f), radius = size.minDimension * 0.43f,
+            style = androidx.compose.ui.graphics.drawscope.Stroke(stroke))
+        drawLine(gold, Offset(middle, size.height * 0.15f), Offset(middle, size.height * 0.86f), stroke)
+        drawCircle(DesktopText, radius = size.minDimension * 0.12f,
+            center = Offset(middle, size.height * 0.31f), style = androidx.compose.ui.graphics.drawscope.Stroke(stroke))
+        drawLine(gold, Offset(size.width * 0.34f, size.height * 0.63f),
+            Offset(size.width * 0.66f, size.height * 0.63f), stroke)
+    }
+}
+
 /**
  * What [DesktopFrame] paints behind the window.
  *
@@ -4711,24 +4740,40 @@ private fun DesktopFrame(
  */
 @Composable
 private fun DesktopPageBackdrop(artworkUrl: String?, transparentBase: Boolean) {
+    // Optional local artwork: the personal wallpaper is never bundled or uploaded with the source.
+    val wallpaperPath = remember { System.getenv("BITCHORD_WALLPAPER")?.takeIf(String::isNotBlank) }
+    val wallpaper by produceState<ImageBitmap?>(null, wallpaperPath) {
+        value = wallpaperPath?.let { path ->
+            withContext(Dispatchers.IO) {
+                runCatching { java.io.File(path).readBytes().decodeToImageBitmap() }.getOrNull()
+            }
+        }
+    }
     Box(
-        Modifier
-            .fillMaxSize()
+        Modifier.fillMaxSize()
             .then(if (transparentBase) Modifier else Modifier.background(DesktopBackground)),
     ) {
-        if (artworkUrl == null) return@Box
+        if (artworkUrl == null) {
+            if (!transparentBase) wallpaper?.let { image ->
+                Image(image, contentDescription = null, contentScale = ContentScale.Crop,
+                    alignment = Alignment.Center, alpha = 0.85f, modifier = Modifier.fillMaxSize())
+                Box(Modifier.fillMaxSize().background(Brush.horizontalGradient(
+                    0f to DesktopBackground.copy(alpha = 0.96f),
+                    0.35f to DesktopBackground.copy(alpha = 0.82f),
+                    1f to DesktopBackground.copy(alpha = 0.35f),
+                )))
+                Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(
+                    DesktopBackground.copy(alpha = 0.18f), Color.Transparent,
+                    DesktopBackground.copy(alpha = 0.72f),
+                ))))
+            }
+            return@Box
+        }
         DesktopMesh(artworkUrl)
-        Box(
-            Modifier.fillMaxSize().background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color.Black.copy(alpha = 0.30f),
-                        Color.Black.copy(alpha = 0.72f),
-                        Color.Black.copy(alpha = 0.88f),
-                    ),
-                ),
-            ),
-        )
+        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(
+            Color.Black.copy(alpha = 0.30f), Color.Black.copy(alpha = 0.72f),
+            Color.Black.copy(alpha = 0.88f),
+        ))))
     }
 }
 

@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 internal val DesktopCardFill = DesktopSurface.copy(alpha = 0.98f)
 
 /** A block inside a card — a settings group — lifted just off the fill. */
-internal val DesktopCardInsetFill = Color(0xFF16273B)
+internal val DesktopCardInsetFill = Color(0xFF202B42)
 
 /** The hairline that bounds a card, and separates one row from the next. */
 internal val DesktopCardEdge = DesktopDivider
