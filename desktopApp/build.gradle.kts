@@ -550,3 +550,20 @@ compose.desktop {
     }
 
 }
+
+// UI regressions run offscreen in their own process and preference store.
+val usabilityUiTest by tasks.registering(Test::class) {
+    group = "verification"
+    description = "Checks compact search, playback controls and responsive side panels offscreen."
+    dependsOn(tasks.named("testClasses"))
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    include("**/DesktopUsabilityUiTest*")
+    systemProperty("java.awt.headless", "true")
+    systemProperty("skiko.renderApi", "SOFTWARE")
+    systemProperty("user.home", layout.buildDirectory.dir("ui-test-home").get().asFile.absolutePath)
+    systemProperty("java.util.prefs.userRoot", layout.buildDirectory.dir("ui-test-preferences").get().asFile.absolutePath)
+    systemProperty("bitchord.ui.screenshots", layout.buildDirectory.dir("reports/usability-ui").get().asFile.absolutePath)
+    systemProperty("bitchord.version", "1.8")
+}
+tasks.named<Test>("test") { exclude("**/DesktopUsabilityUiTest*") }
