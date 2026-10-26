@@ -63,6 +63,7 @@ private fun desktopMain() = application {
     // Hoisted so the player can fill the screen and the caption buttons can maximize — see
     // [DesktopWindowMode].
     val placement by DesktopWindowMode.placement.collectAsState()
+    val keyboardDispatcher = remember { DesktopKeyboardDispatcher() }
     val state = rememberWindowState(width = 1_220.dp, height = 780.dp)
     LaunchedEffect(placement) { state.placement = placement }
     // ...and back, for the times the window is moved between placements by something that is not
@@ -72,6 +73,7 @@ private fun desktopMain() = application {
     }
     Window(
         onCloseRequest = { if (DesktopWindowVisibility.onCloseRequest()) exitApplication() },
+        onPreviewKeyEvent = keyboardDispatcher::dispatch,
         visible = visible,
         title = "BitChord",
         icon = painterResource(Res.drawable.logo),
@@ -147,6 +149,7 @@ private fun desktopMain() = application {
             )
         }
         CompositionLocalProvider(
+            LocalDesktopKeyboardDispatcher provides keyboardDispatcher,
             LocalDesktopWindowActions provides actions,
             LocalDesktopWindowScope provides this,
         ) {
