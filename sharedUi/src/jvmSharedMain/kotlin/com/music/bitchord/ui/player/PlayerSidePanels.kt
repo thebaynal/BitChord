@@ -46,6 +46,7 @@ fun LyricsSidePanel(
     lyricsUnavailable: Boolean,
     onSeek: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    autoFollow: Boolean = true,
 ) {
     val haptics = rememberHaptics()
     val lyricsOffsetMs by PlayerSettings.lyricsOffsetMs.collectAsStateWithLifecycle()
@@ -114,6 +115,7 @@ fun LyricsSidePanel(
                         isPlaying = isPlaying && position.advancing,
                         onSeekToLine = seekToLyric,
                         controlsOpen = true,
+                        autoFollow = autoFollow,
                         onRevealControls = {},
                         onHideControls = {},
                         translationProgress = particleProgress,

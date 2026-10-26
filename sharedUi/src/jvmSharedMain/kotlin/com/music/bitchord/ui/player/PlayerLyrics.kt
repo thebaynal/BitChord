@@ -1574,6 +1574,7 @@ internal fun LyricsPanel(
     /** Tap while picking: add or drop that line. */
     onTogglePick: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
+    autoFollow: Boolean = true,
 ) {
     val panelPlaying = isPlaying && active
     val clock = rememberLyricClock(trackKey, playhead, panelPlaying)
@@ -1627,7 +1628,8 @@ internal fun LyricsPanel(
     var browsingByDrag by remember { mutableStateOf(false) }
     // While picking lines, the panel must not auto-scroll — the reader needs
     // the list to stay put so they can tap the lines they want.
-    val browsing = browsingByDrag || picking
+    val browsing = browsingByDrag || picking || !autoFollow
+    LaunchedEffect(autoFollow) { if (autoFollow) browsingByDrag = false }
     val onBottomHalfTap: () -> Unit = {
         // A pick has the whole panel to itself: the controls that a tap down
         // there would pull back in are the player's transport, and it must not
