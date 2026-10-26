@@ -10,6 +10,11 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asComposeCanvas
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
+import androidx.compose.ui.platform.PlatformContext
+import androidx.compose.ui.platform.WindowInfo
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.platform.FrameRecomposer
 import androidx.compose.ui.scene.CanvasLayersComposeScene
 import androidx.compose.ui.semantics.*
@@ -40,7 +45,20 @@ class DesktopUsabilityUiTest {
     private class UiScene(context: CoroutineContext) : AutoCloseable {
         private val job = SupervisorJob()
         private val recomposer = FrameRecomposer(context + job)
-        val scene = CanvasLayersComposeScene(frameRecomposer = recomposer, size = IntSize(900, 600))
+        private var viewport by mutableStateOf(IntSize(900, 600))
+        private val platform = object : PlatformContext {
+            override val windowInfo = object : WindowInfo {
+                override val isWindowFocused = false
+                override val containerSize: IntSize get() = viewport
+                override val containerDpSize: DpSize get() = DpSize(viewport.width.dp, viewport.height.dp)
+            }
+            override val inputModeManager = object : InputModeManager {
+                override val inputMode = InputMode.Keyboard
+                override fun requestInputMode(inputMode: InputMode) = true
+            }
+        }
+        val scene = CanvasLayersComposeScene(frameRecomposer = recomposer, size = viewport, platformContext = platform)
+        fun resize(size: IntSize) { viewport = size; scene.size = size }
         val keyboardDispatcher = DesktopKeyboardDispatcher()
         private var clock = 0L
         suspend fun frames(count: Int = 24) {
@@ -101,7 +119,7 @@ class DesktopUsabilityUiTest {
             field.config[SemanticsActions.SetText].action!!.invoke(AnnotatedString("Frieren"))
             ui.frames()
             for (width in listOf(900, 979, 980, 1220, 900)) {
-                ui.scene.size = IntSize(width, 600)
+                ui.resize(IntSize(width, 600))
                 ui.frames()
                 val input = ui.nodes().single { it.config.contains(SemanticsActions.SetText) }
                 assertEquals("Frieren", input.config[SemanticsProperties.EditableText].text)
@@ -112,7 +130,8 @@ class DesktopUsabilityUiTest {
             assertTrue(ui.nodes().single { it.config.contains(SemanticsActions.SetText) }.config[SemanticsProperties.Focused])
             ui.click(ui.described("Keyboard shortcuts"))
             ui.frames()
-            ui.text("Keyboard shortcuts")
+            assertTrue(ui.text("Keyboard shortcuts").boundsInWindow.top >= 0)
+            assertTrue(ui.text("Done").boundsInWindow.bottom <= 600)
             ui.save("keyboard-shortcuts")
             ui.click(ui.text("Done"))
             ui.frames()
@@ -189,7 +208,7 @@ class DesktopUsabilityUiTest {
             ui.click(ui.described("Dismiss side panel")); ui.frames()
             assertNull(panel)
             panel = DesktopSidePanel.QUEUE
-            ui.scene.size = IntSize(1220, 780)
+            ui.resize(IntSize(1220, 780))
             ui.frames(60)
             val before = ui.described("Main content").boundsInRoot.width
             ui.described("Resize side panel").config[SemanticsActions.SetProgress].action!!.invoke(480f)
